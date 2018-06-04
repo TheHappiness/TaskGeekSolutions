@@ -17,6 +17,7 @@ namespace ConsoleApp
             currentColor = Console.ForegroundColor;
             double[] _bagMass = null;
             BagsInitialize(100000, 1500, ref _bagMass);
+            //PrintBugsMass(_bagMass);
 
             do
             {
@@ -27,13 +28,13 @@ namespace ConsoleApp
 
                     Console.WriteLine("Enter N kg of sugar:");
                     double n = double.Parse(Console.ReadLine());
-
-                    Console.WriteLine("\nThe indexes:\n");
-
                     Stopwatch sw = new Stopwatch();
 
+
+                    /* To buy a suitable bags */
+                    Console.WriteLine("\nThe indexes:\n");                       
                     sw.Start();
-                    foreach (var item in BuySuagarBags(n, _bagMass))
+                    foreach (var item in BuySugarBags(n, _bagMass))
                     {
                         Console.Write($"[{item}] ");
                     }
@@ -41,11 +42,23 @@ namespace ConsoleApp
                     Console.WriteLine("\nTIME: {0}", sw.ElapsedMilliseconds.ToString());
                     sw.Reset();
 
-                    //PrintBugsMass(_bagMass);
-                    Console.WriteLine("\n.....................\n\nThe indexes by parallel\n");
 
+                    /* To buy a suitable bags parallel */
+                    Console.WriteLine("\n.....................\n\nThe indexes by parallel\n");
                     sw.Start();
-                    foreach (var item in BuySuagarBagsByParallel(n, _bagMass))
+                    foreach (var item in BuySugarBagsByParallel(n, _bagMass))
+                    {
+                        Console.Write($"[{item}] ");
+                    }
+                    sw.Stop();
+                    Console.WriteLine("\nTIME: {0}", sw.ElapsedMilliseconds.ToString());
+                    sw.Reset();
+
+
+                    /* To buy a suitable bags if they was sorted */
+                    Console.WriteLine("\n.....................\n\nThe indexes by Sort\n");
+                    sw.Start();
+                    foreach (var item in BuySugarBagsBySort(n, _bagMass))
                     {
                         Console.Write($"[{item}] ");
                     }
@@ -71,12 +84,60 @@ namespace ConsoleApp
         }
 
         /// <summary>
-        /// To buy a fit bags by parallel;
+        /// To buy a suitable bags if they was sorted.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="bagMass"></param>
+        /// <returns></returns>
+        private static IEnumerable<double> BuySugarBagsBySort(double n, double[] bagMass)
+        {
+            if (bagMass == null)
+            {
+                throw new ArgumentNullException("The array can not be null.");
+            }
+
+            Array.Sort(bagMass);
+
+            long first = 0;
+            long last = bagMass.LongLength - 1;
+            bool isSuccess = false;
+
+            while (first < last)
+            {
+                double sum = bagMass[first] + bagMass[last];
+                if (sum == n)
+                {
+                    isSuccess = true;
+                    yield return first;
+                    yield return last;
+                    break;
+                }
+                else
+                {
+                    if (sum < n)
+                    {
+                        ++first;
+                    }
+                    else
+                    {
+                        --last;
+                    }
+                }
+            }
+
+            if (!isSuccess)
+            {
+                Console.WriteLine("No matching bags");
+            }
+        }
+
+        /// <summary>
+        /// To buy a suitable bags by parallel.
         /// </summary>
         /// <param name="n"></param>
         /// <param name="_bagMass"></param>
         /// <returns></returns>
-        private static IEnumerable<double> BuySuagarBagsByParallel(double n, double[] _bagMass)
+        private static IEnumerable<double> BuySugarBagsByParallel(double n, double[] _bagMass)
         {
             if (_bagMass == null)
             {
@@ -124,12 +185,12 @@ namespace ConsoleApp
         }
 
         /// <summary>
-        /// To buy a fit bags.
+        /// To buy a suitable bags.
         /// </summary>
         /// <param name="n"></param>
         /// <param name="bagMass"></param>
         /// <returns></returns>
-        private static IEnumerable<double> BuySuagarBags(double n, double[] bagMass)
+        private static IEnumerable<double> BuySugarBags(double n, double[] bagMass)
         {
             if (bagMass == null)
             {
